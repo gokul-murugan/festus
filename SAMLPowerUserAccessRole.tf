@@ -1,0 +1,176 @@
+data "aws_iam_policy_document" "SAMLPowerUserAccess" {
+  statement {
+    sid    = "samlPowerUserAccess"
+    effect = "Allow"
+    principals {
+      type = "Federated"
+      identifiers = [
+        "arn:aws:iam::229349022034:saml-provider/Okta"
+      ]
+    }
+    actions = [
+      "sts:AssumeRoleWithSAML"
+    ]
+    condition {
+      test     = "StringEquals"
+      variable = "SAML:aud"
+      values   = ["https://signin.aws.amazon.com/saml"]
+    }
+  }
+}
+
+resource "aws_iam_role" "SAMLPowerUserAccess" {
+  name               = "SAMLPowerUserAccess"
+  assume_role_policy = data.aws_iam_policy_document.SAMLPowerUserAccess.json
+}
+
+resource "aws_iam_role_policy_attachment" "SAMLPowerUserAccess_ManagedPolicies" {
+  count = length(local.SAMLPowerUserAccessRolePolicies)
+
+  role       = aws_iam_role.SAMLPowerUserAccess.name
+  policy_arn = format("%s/%s", "arn:aws:iam::aws:policy", local.SAMLPowerUserAccessRolePolicies[count.index])
+}
+
+# All Customer Managed Policies
+
+data "aws_iam_policy_document" "power_user_vpc_restrict_policy" {
+  statement {
+    sid    = "VpcTagsAccessDeny"
+    effect = "Deny"
+    actions = [
+      "ec2:DeleteTags",
+      "ec2:CreateTags",
+      "ec2:DescribeTags"
+    ]
+    resources = [
+      "arn:aws:ec2:*:229349022034:route-table/*",
+      "arn:aws:ec2:*:229349022034:subnet/*",
+      "arn:aws:ec2:*:229349022034:dhcp-options/*",
+      "arn:aws:ec2:*:229349022034:network-acl/*",
+      "arn:aws:ec2:*:229349022034:vpc-endpoint/*",
+      "arn:aws:ec2:*:229349022034:transit-gateway-attachment/*",
+      "arn:aws:ec2:*:229349022034:natgateway/*",
+      "arn:aws:ec2:*:229349022034:vpc-peering-connection/*",
+      "arn:aws:ec2:*:229349022034:internet-gateway/*",
+      "arn:aws:ec2:*:229349022034:vpn-gateway/*",
+      "arn:aws:ec2:*:229349022034:vpc-flow-log/*",
+      "arn:aws:ec2:*:229349022034:local-gateway-route-table-virtual-interface-group-association/*",
+      "arn:aws:ec2:*:229349022034:transit-gateway-route-table/*",
+      "arn:aws:ec2:*:229349022034:local-gateway-route-table/*",
+      "arn:aws:ec2:*:229349022034:vpc-endpoint-service/*",
+      "arn:aws:ec2:*:229349022034:transit-gateway/*",
+      "arn:aws:ec2:*:229349022034:vpc/*",
+      "arn:aws:ec2:*:229349022034:customer-gateway/*",
+      "arn:aws:ec2:*:229349022034:client-vpn-endpoint/*",
+      "arn:aws:ec2:*:229349022034:vpn-connection/*",
+      "arn:aws:ec2:*:229349022034:local-gateway-route-table-vpc-association/*",
+      "arn:aws:ec2:*:229349022034:local-gateway/*"
+    ]
+  }
+
+  statement {
+    sid    = "VpcAccessDeny"
+    effect = "Deny"
+    actions = [
+      "ec2:DeleteSubnet",
+      "ec2:ModifyVpcEndpointServiceConfiguration",
+      "ec2:DetachClassicLinkVpc",
+      "ec2:DeleteClientVpnEndpoint",
+      "ec2:DeleteVpcPeeringConnection",
+      "ec2:DeleteVpcEndpoints",
+      "ec2:CreateTransitGatewayRouteTable",
+      "ec2:AcceptVpcPeeringConnection",
+      "ec2:ModifyClientVpnEndpoint",
+      "ec2:AcceptTransitGatewayVpcAttachment",
+      "ec2:DisableVgwRoutePropagation",
+      "ec2:AssociateVpcCidrBlock",
+      "ec2:DeleteLocalGatewayRouteTableVpcAssociation",
+      "ec2:ReplaceRoute",
+      "ec2:AssociateRouteTable",
+      "ec2:DeleteRouteTable",
+      "ec2:RejectVpcPeeringConnection",
+      "ec2:DisassociateVpcCidrBlock",
+      "ec2:DeleteTransitGatewayVpcAttachment",
+      "ec2:DeleteVpnGateway",
+      "ec2:CreateRoute",
+      "ec2:ModifyVpcPeeringConnectionOptions",
+      "ec2:CreateVpnGateway",
+      "ec2:AssociateTransitGatewayRouteTable",
+      "ec2:RejectTransitGatewayVpcAttachment",
+      "ec2:DeleteVpnConnection",
+      "ec2:CreateVpcPeeringConnection",
+      "ec2:RejectVpcEndpointConnections",
+      "ec2:EnableVpcClassicLink",
+      "ec2:DisassociateTransitGatewayRouteTable",
+      "ec2:DisableTransitGatewayRouteTablePropagation",
+      "ec2:CreateVpcEndpointConnectionNotification",
+      "ec2:DeleteLocalGatewayRouteTablePermission",
+      "ec2:CreateRouteTable",
+      "ec2:CreateLocalGatewayRouteTableVpcAssociation",
+      "ec2:DisassociateRouteTable",
+      "ec2:ModifyVpcEndpointConnectionNotification",
+      "ec2:DeleteTransitGatewayRouteTable",
+      "ec2:CreateVpcEndpointServiceConfiguration",
+      "ec2:DetachVpnGateway",
+      "ec2:CreateTransitGatewayRoute",
+      "ec2:DeleteTransitGatewayRoute",
+      "ec2:CreateTransitGatewayVpcAttachment",
+      "ec2:CreateDefaultVpc",
+      "ec2:DeleteLocalGatewayRoute",
+      "ec2:AssociateSubnetCidrBlock",
+      "ec2:DeleteVpc",
+      "ec2:EnableTransitGatewayRouteTablePropagation",
+      "ec2:CreateSubnet",
+      "ec2:CreateLocalGatewayRouteTablePermission",
+      "ec2:ModifyVpcEndpoint",
+      "ec2:CreateVpnConnection",
+      "ec2:MoveAddressToVpc",
+      "ec2:ExportTransitGatewayRoutes",
+      "ec2:CreateVpc",
+      "ec2:ModifyVpnConnection",
+      "ec2:CreateSubnetCidrReservation",
+      "ec2:DeleteVpcEndpointServiceConfigurations",
+      "ec2:ReplaceTransitGatewayRoute",
+      "ec2:ModifySubnetAttribute",
+      "ec2:CreateDefaultSubnet",
+      "ec2:ModifyVpcAttribute",
+      "ec2:AttachClassicLinkVpc",
+      "ec2:ModifyTransitGatewayVpcAttachment",
+      "ec2:DisassociateClientVpnTargetNetwork",
+      "ec2:CreateLocalGatewayRoute",
+      "ec2:CreateClientVpnRoute",
+      "ec2:AcceptVpcEndpointConnections",
+      "ec2:AttachVpnGateway",
+      "ec2:DeleteRoute",
+      "ec2:CreateVpnConnectionRoute",
+      "ec2:DisassociateSubnetCidrBlock",
+      "ec2:CreateClientVpnEndpoint",
+      "ec2:DeleteVpnConnectionRoute",
+      "ec2:AuthorizeClientVpnIngress",
+      "ec2:DeleteVpcEndpointConnectionNotifications",
+      "ec2:ModifyVpcEndpointServicePayerResponsibility",
+      "ec2:CreateVpcEndpoint",
+      "ec2:DeleteClientVpnRoute",
+      "ec2:StartVpcEndpointServicePrivateDnsVerification",
+      "ec2:DisableVpcClassicLinkDnsSupport",
+      "ec2:DisableVpcClassicLink",
+      "ec2:ModifyVpcTenancy",
+      "ec2:EnableVpcClassicLinkDnsSupport",
+      "ec2:DeleteSubnetCidrReservation"
+    ]
+    resources = [
+      "*",
+    ]
+
+  }
+}
+
+resource "aws_iam_policy" "power_user_vpc_restrict_policy" {
+  name   = "power_user_vpc_restrict_policy"
+  policy = data.aws_iam_policy_document.vpc_restrict_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "power_user_vpc_restrict_policy_attach" {
+  role       = aws_iam_role.SAMLPowerUserAccess.name
+  policy_arn = aws_iam_policy.vpc_restrict_policy.arn
+}
